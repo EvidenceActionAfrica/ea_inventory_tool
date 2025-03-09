@@ -1,0 +1,91 @@
+/* contains common styles to be used system-wide */
+:root {
+    --background-grey: rgb(236, 235, 235);
+    --background-darker-grey: rgb(216,215,215);
+}
+
+body {
+    font-family: Arial;
+    font-size: 14px;
+}
+
+.bt-blue{
+    background-color: #20253a;
+    color: #fff;
+    border-style: none;
+    padding: .5rem 1rem ;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-right: 2rem;
+}
+.bt-green{
+    background-color: #5dd9be;
+    color: #fff;
+    border-style: none;
+    padding: .5rem 1rem ;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-right: 2rem;
+}
+
+.bt-purple{
+    background-color: #5c5161;
+    color: #fff;
+    border-style: none;
+    padding: .5rem 1rem ;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-right: 2rem;
+}
+.bt-pink{
+    background-color: #e600a0;
+    color: #fff;
+    border-style: none;
+    padding: .5rem 1rem ;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-right: .5rem;
+}
+.grey-bc{
+    background-color: var(--background-grey);
+}
+
+.darkergrey-bc{
+    background-color: var(--background-darker-grey);
+}
+
+.alert {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 15px 30px;
+    background-color: rgba(50, 205, 50, 0.8);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    animation: slideUp 1s ease-out forwards; 
+    z-index: 1000;
+    font-size: 16px; 
+    display: none;
+}
+
+.alert_error {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 15px 30px;
+  background-color: rgba(255, 0, 0,0.8);
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  animation: slideUp 1s ease-out forwards; 
+  z-index: 1000;
+  font-size: 16px; 
+  display: none;
+}
+
+
+.invalid-field {
+    border: 2px solid red;
+    background-color: #ffd0d0;
+}

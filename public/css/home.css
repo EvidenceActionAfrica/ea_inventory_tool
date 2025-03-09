@@ -1,0 +1,64 @@
+.grey-bc {
+    height: 90vh; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 4rem;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem; 
+    max-width: 1200px; /* Adjust the max width to control card positioning */
+    justify-content: center;
+}
+
+.card {
+    flex: 1 1 calc(68% - 10rem); /* Two cards per row */
+    max-width: 500px; 
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+
+
+.card-details {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card img {
+    height: 100%;
+    width: 100%; 
+    box-shadow: 0 0 8px 8px white inset;
+    left: 0;
+}
+
+.card b {
+    font-size: 18px;
+    color: #333;
+    margin-top: 0.5rem;
+}
+
+/* Hover effects */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card:active {
+    transform: translateY(0);
+}
+
+.flex-top {
+    margin-left: 1rem;
+    font-weight: 700;
+    font-size: 16px;
+}
