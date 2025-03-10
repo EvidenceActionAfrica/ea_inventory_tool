@@ -31,14 +31,8 @@ class ItemReturnController {
                 // Fetch returns for the logged-in user
                 $returns = $this->model->getUserReturns($user_id);
                 
-                // Check if returns are found
-                if (!empty($returns)) {
-                    // If there are returns, load the view
-                    require_once __DIR__ . '/../views/assignments/returned_items.php';
-                } else {
-                    // If no returns, show a message
-                    echo "No returns found for this user.";
-                }
+                // Load the view with the returns data (empty or not)
+                require_once __DIR__ . '/../views/assignments/returned_items.php';
             } catch (Exception $e) {
                 // Handle any errors that occur while fetching data
                 echo "Error fetching returns: " . $e->getMessage();
@@ -48,6 +42,7 @@ class ItemReturnController {
             echo "User is not logged in.";
         }
     }
+    
 
     public function showPendingReturns() {
         try {

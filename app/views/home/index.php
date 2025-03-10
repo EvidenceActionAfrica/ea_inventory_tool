@@ -18,29 +18,31 @@ $role = $_SESSION['user']['role'] ?? '';
 <div class="grey-bc">
   <div class="container">
 
+    <?php if($role === 'IT'|| $role === 'super_admin'): ?>
       <div class="card" style="background-color:#05545a;" 
-        onClick="to_url('<?php echo ($role === 'IT' || $role == 'super_admin') ? URL . 'inventory' : URL; ?>')">
-        <b style="color: #fff; margin-left:4rem; font-family: ArchivoBlack; font-size:20px;">IT</b>
-    </div>
+           onClick="to_url('<?php echo URL . 'inventory'; ?>')">
+        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">INVENTORY</b>
+      </div>
+    <?php endif; ?>
 
     <?php if($role === 'IT'|| $role === ' QAQC' || $role === 'super_admin'): ?>
       <div class="card" style="background-color:#20253a;" 
            onClick="to_url('<?php echo URL . 'item-assignments'; ?>')">
-        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">IT&QA</b>
+        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">ASSIGNMENTS</b>
       </div>
     <?php endif; ?>
 
     <?php if($role === 'IT'|| $role === 'MLE' || $role === 'QAQC'|| $role === 'super_admin'): ?>
       <div class="card" style="background-color:#e600a0;" 
            onClick="to_url('<?php echo URL . 'item-returns'; ?>')">
-        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">MLE</b>
+        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">COLLECTIONS</b>
       </div>
     <?php endif; ?>
 
     <?php if( $role === 'super_admin'): ?>
       <div class="card" style="background-color:#5c5161;" 
            onClick="to_url('<?php echo URL . 'auth_users'; ?>')">
-        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">User<br> Management</b>
+        <b style="color: #fff; margin-left:3rem; font-family: ArchivoBlack; font-size:20px;">USER<br> MANAGEMENT</b>
       </div>
     <?php endif; ?>
 
