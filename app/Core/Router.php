@@ -23,15 +23,16 @@ class Router {
             $params = $reflection->getParameters();
     
             if (count($params) > 0) {
-                $user_id = $_SESSION['user_id'] ?? null;
+                $user_id = $_SESSION['user']['id'] ?? null; // Fix session key to match your structure
                 if (!$user_id) {
-                    header("Location: login.php"); // Redirect instead of die()
+                    header("Location: /ea_inventory_tool/public/login.php");
                     exit();
                 }
                 $controllerInstance->$method($user_id);
             } else {
                 $controllerInstance->$method();
             }
+            
         } else {
             echo "Oops!! Not Found";
         }

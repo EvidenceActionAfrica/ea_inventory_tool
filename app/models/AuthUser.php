@@ -86,8 +86,14 @@ class AuthUser {
         $sql = "DELETE FROM auth_users WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        
+        try {
+            return $stmt->execute(); // Return true if successful
+        } catch (PDOException $e) {
+            return false; // Handle error gracefully
+        }
     }
+
 
     // Get all roles for selection
     public function getRoles() {

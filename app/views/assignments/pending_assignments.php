@@ -1,28 +1,31 @@
+
 <?php
 require_once __DIR__ . "/../authusers/auth.php";
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
 use App\Controllers\ItemAssignmentController;
 
 $controller = new ItemAssignmentController();
 $user_id = $_SESSION['user']['id'] ?? null;
 
-// Fetch pending assignments
-$pendingAssignments = $controller->getPendingAssignments($user_id);
-
-if ($pendingAssignments === null) {
-    die("Error fetching assignments.");
-}
-
 // Handle item acknowledgment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acknowledge'])) {
     $assignment_id = $_POST['assignment_id'] ?? null;
     if ($assignment_id && is_numeric($assignment_id)) {
-        $message = $controller->acknowledgeItem($assignment_id);
-        require_once __DIR__ . "/../views/assignments/pending_assignments.php";
+        $controller->acknowledgeItem($assignment_id);
+        header('Location: /ea_inventory_tool/public/pending-assignments?message=Acknowledged');
+        exit(); // Stop further execution
     }
+}
+
+// Fetch pending assignments AFTER processing form submission
+$pendingAssignments = $controller->getPendingAssignments($user_id);
+
+if ($pendingAssignments === null) {
+    die("Error fetching assignments.");
 }
 ?>
 
@@ -67,11 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acknowledge'])) {
                             <td><?= htmlspecialchars($assignment['date_assigned']); ?></td>
                             <td><?= htmlspecialchars($assignment['acknowledged']); ?></td>
                             <td>
-                            <form method="POST" action="/ea_inventory_tool/public/pending-assignments">
-                                <input type="hidden" name="assignment_id" value="<?= $assignment['id']; ?>">
-                                <button type="submit" name="acknowledge" class="btn btn-primary btn-sm">Acknowledge</button>
-                            </form>
-
+                                <form method="POST" action="">
+                                    <input type="hidden" name="assignment_id" value="<?= $assignment['id']; ?>">
+                                    <button type="submit" name="acknowledge" class="btn btn-primary btn-sm">Acknowledge</button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -83,3 +85,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acknowledge'])) {
     </div>
 </body>
 </html>
+

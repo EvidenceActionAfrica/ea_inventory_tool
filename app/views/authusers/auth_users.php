@@ -1,6 +1,6 @@
 <?php
 use App\Config\Database;
-
+require_once __DIR__ . "/../authusers/auth.php";
 // Database connection
 $db = new Database();
 $conn = $db->connect();
@@ -30,17 +30,17 @@ if (isset($_GET['office_id'])) {
     $query = "
         SELECT l.id, l.name 
         FROM locations l
-        WHERE l.office_id = :office_id
-
+        JOIN offices o ON l.id = o.location_id
+        WHERE o.id = :office_id
     ";
     $stmt = $conn->prepare($query);
-    $stmt->bindParam(':office_id', $office_id);
+    $stmt->bindParam(':office_id', $office_id, PDO::PARAM_INT);
     $stmt->execute();
-    $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($locations);
+    $locations = $stmt->fetchAll(PDO::FETCH_ASSOC); // Use fetchAll to handle multiple records
+    echo json_encode($locations); // Send JSON response
     exit;
 }
-    
+
 
 // Fetch authorized users with their related data
 $authUsersQuery = "
@@ -63,35 +63,46 @@ $authUsers = $stmt->fetchAll(PDO::FETCH_ASSOC) ?? [];
 
 // Add new user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Encrypt password
-    $role = $_POST['role'];
-    $department_id = $_POST['department_id'];
-    $position_id = $_POST['position_id'];
-    $office_id = $_POST['office_id'];
-    $location_id = $_POST['location_id'];
+    $name = $_POST['name'] ?? null;
+    $email = $_POST['email'] ?? null;
+    $password = isset($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
+    $role = $_POST['role'] ?? null;
+    $department_id = $_POST['department_id'] ?? null;
+    $position_id = $_POST['position_id'] ?? null;
+    $office_id = $_POST['office_id'] ?? null;
 
-    $insertQuery = "
-        INSERT INTO auth_users (name, email, password, role, department_id, position_id, office_id, location_id) 
-        VALUES (:name, :email, :password, :role, :department_id, :position_id, :office_id, :location_id)
-    ";
+    if ($name && $email && $password && $role && $department_id && $position_id && $office_id) {
+        // Auto-fetch location_id based on office_id
+        $locationQuery = "SELECT location_id FROM offices WHERE id = :office_id";
+        $stmt = $conn->prepare($locationQuery);
+        $stmt->bindParam(':office_id', $office_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $location = $stmt->fetch(PDO::FETCH_ASSOC);
+        $location_id = $location['location_id'] ?? null;
 
-    $stmt = $conn->prepare($insertQuery);
-    $stmt->bindParam(':name', $name);
-    $stmt->bindParam(':email', $email);
-    $stmt->bindParam(':password', $password);
-    $stmt->bindParam(':role', $role);
-    $stmt->bindParam(':department_id', $department_id);
-    $stmt->bindParam(':position_id', $position_id);
-    $stmt->bindParam(':office_id', $office_id);
-    $stmt->bindParam(':location_id', $location_id);
+        $insertQuery = "
+            INSERT INTO auth_users (name, email, password, role, department_id, position_id, office_id, location_id) 
+            VALUES (:name, :email, :password, :role, :department_id, :position_id, :office_id, :location_id)
+        ";
 
-    if ($stmt->execute()) {
-        header('Location: auth_users.php?success=User added successfully');
-        exit();
+        $stmt = $conn->prepare($insertQuery);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':role', $role);
+        $stmt->bindParam(':department_id', $department_id);
+        $stmt->bindParam(':position_id', $position_id);
+        $stmt->bindParam(':office_id', $office_id);
+        $stmt->bindParam(':location_id', $location_id);
+
+        if ($stmt->execute()) {
+            header('Location: auth_users?success=User added successfully');
+            exit();
+        } else {
+            echo "Error adding user.";
+        }
     } else {
-        echo "Error adding user.";
+        echo "Please fill out all required fields.";
     }
 }
 
@@ -153,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
 <div class="container">
     <div class="row">
         <!-- User List -->
-        <div class="col-md-8 table-container">
+        <div class="col-md- table-container">
             <h4>Authorized Users</h4>
 
             <?php if (isset($_GET['success'])): ?>
@@ -184,10 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
                             <td><?= htmlspecialchars($user['office_name'] ?? 'N/A') ?></td>
                             <td><?= htmlspecialchars($user['location_name'] ?? 'N/A') ?></td>
                             <td>
-                                <a href="auth_users.php?action=edit&id=<?= $user['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                                <a href="auth_users.php?action=delete&id=<?= $user['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                                <a href="auth_users?edit=<?= $user['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="<?= URL ?>auth_users/destroy?delete=<?= $user['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
                             </td>
-
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -195,11 +205,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         </div>
 
         <!-- Add/Edit Form -->
-        <div class="col-md-4 form-container">
+        <div class="col-md-5 form-container">
             <div class="card">
                 <h5 class="text-center"><?= isset($_GET['edit']) ? 'Edit User' : 'Add User' ?></h5>
 
-                <form method="POST" action="index.php?url=authUsers/save">
+                <form method="POST" action="<?php echo URL; ?>auth_users">
                     <input type="hidden" name="id" value="<?= $editUser['id'] ?? '' ?>">
 
                     <!-- Name -->
@@ -267,22 +277,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
                         </select>
                     </div>
 
-                    <!-- Office -->
-                        <div class="mb-3">
-                            <label>Office:</label>
-                            <select name="office_id" id="office">
-                                <option value="">Select Office</option>
-                                <?php foreach ($offices as $office): ?>
-                                    <option value="<?= $office['id'] ?>"><?= htmlspecialchars($office['name']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                    <!-- Office dropdown -->
+                        <label for="office">Office:</label>
+                        <select name="office_id" id="office" class="form-control" required>
+                            <option value="">Select Office</option>
+                            <?php
+                            $officeModel = new App\Models\Office();
+                            $offices = $officeModel->getAll();
+                            foreach ($offices as $office) {
+                                echo "<option value='{$office['id']}' data-location='{$office['location_name']}'>{$office['name']}</option>";
+                            }
+                            ?>
+                        </select>
 
-                        <!-- Location -->
-                        <div class="mb-3">
-                            <label>Location:</label>
-                             <input type="text" id="location" name="location_id" readonly>
-                        </div>
+                        <!-- Location input (read-only) -->
+                        <label for="location">Location:</label>
+                        <input type="text" name="location" id="location" class="form-control" readonly placeholder="Location will auto-populate">
+
 
                     <!-- Submit Button -->
                     <button type="submit" name="<?= isset($editUser) ? 'update' : 'add' ?>" class="btn btn-primary w-100">
@@ -296,18 +307,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
 </div>
 <script>
     document.getElementById('office').addEventListener('change', function() {
-        fetch(`auth_users.php?fetch_locations=true&office_id=${this.value}`)
-            .then(response => response.json())
-            .then(data => {
-                const location = document.getElementById('location');
-                location.innerHTML = '<option value="">Select Location</option>';
-                data.forEach(loc => {
-                    location.innerHTML += `<option value="${loc.id}">${loc.name}</option>`;
-                });
-            });
-    });
-</script>
+    const selectedOption = this.options[this.selectedIndex];
+    const location = selectedOption.getAttribute('data-location');
+    document.getElementById('location').value = location || '';
+});
 
+</script>
 
 </body>
 </html>
